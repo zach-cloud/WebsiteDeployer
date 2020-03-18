@@ -5,11 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Class to read from the properties resource
+ */
 public class PropertiesReader {
 
     private Properties prop;
     private Map<String,String> cache;
 
+    /**
+     * Requires constructor. Creates a PropertiesReader linked to the config.properties class.
+     */
     public PropertiesReader() {
         cache = new HashMap<>();
         prop = new Properties();
@@ -21,10 +27,22 @@ public class PropertiesReader {
         }
     }
 
+    /**
+     * Determines if a property exists in the properties file.
+     *
+     * @param key   Name of property
+     * @return      True if exists, false if not.
+     */
     public boolean propertyExists(String key) {
         return prop.containsKey(key);
     }
 
+    /**
+     * Gets a property from the props file.
+     *
+     * @param key   Name of property
+     * @return      Property, if it exists.
+     */
     public String getProperty(String key) {
         if(cache.containsKey(key)) {
             return cache.get(key);
@@ -33,10 +51,4 @@ public class PropertiesReader {
         cache.put(key, value);
         return value;
     }
-
-    public void save(String key, String value) {
-        cache.put(key, value);
-        prop.put(key, value);
-    }
-
 }

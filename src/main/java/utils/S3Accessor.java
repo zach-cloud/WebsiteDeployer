@@ -1,23 +1,25 @@
 package utils;
-
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManager;
-
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
+/**
+ * Access class for Amazon S3.
+ * Wrapper over the SDK.
+ */
 public class S3Accessor {
 
     private AmazonS3Client s3;
     private TransferManager tm;
 
+    /**
+     * Required constructor. Makes a new S3 Accessor with credentials.
+     *
+     * @param access    S3 Access Key
+     * @param secret    S3 Secret Key
+     */
     public S3Accessor(String access, String secret) {
         this.s3 = new AmazonS3Client(new AWSCredentials() {
             @Override
@@ -44,6 +46,13 @@ public class S3Accessor {
         });
     }
 
+    /**
+     * Writes a file from disk to S3.
+     *
+     * @param bucket    Bucket name to write to
+     * @param key       Key name to write to
+     * @param file      File on disk
+     */
     public void writeFile(String bucket, String key, File file) {
         if(!s3.doesBucketExistV2(bucket)) {
             s3.createBucket(bucket);
@@ -53,6 +62,11 @@ public class S3Accessor {
                         .withCannedAcl(CannedAccessControlList.PublicRead));
     }
 
+    /**
+     * Removes all files from a bucket.
+     *
+     * @param bucketName    Bucket name to delete from.
+     */
     public void removeFiles(String bucketName) {
         ObjectListing objectListing = s3.listObjects(bucketName);
         for(S3ObjectSummary s3ObjectSummary: objectListing.getObjectSummaries()) {
@@ -60,14 +74,31 @@ public class S3Accessor {
         }
     }
 
+    /**
+     * Removes one file from S3.
+     *
+     * @param bucketName    Bucket name to delete from.
+     * @param key           Key to delete from
+     */
     public void removeFile(String bucketName, String key) {
         s3.deleteObject(bucketName, key);
     }
 
+    /**
+     * Determines if a bucket exists.
+     *
+     * @param bucketName    Bucket name
+     * @return              True if exists, false if not.
+     */
     public boolean bucketExists(String bucketName) {
         return s3.doesBucketExistV2(bucketName);
     }
 
+    /**
+     * Makes a new bucket
+     *
+     * @param bucketName    Bucket name to create
+     */
     public void createBucket(String bucketName) {
         s3.createBucket(bucketName);
     }

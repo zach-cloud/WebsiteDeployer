@@ -14,6 +14,9 @@ public class WebsiteDeployer {
     private String websiteName;
     private String folderName;
 
+    /**
+     * Creates a Website Deployer using the config.properties file.
+     */
     public WebsiteDeployer() {
         PropertiesReader propertiesReader = new PropertiesReader();
         this.s3Accessor = new S3Accessor(propertiesReader.getProperty("s3AccessKey"), propertiesReader.getProperty("s3SecretKey"));
@@ -21,6 +24,9 @@ public class WebsiteDeployer {
         this.folderName = propertiesReader.getProperty("rootFolder");
     }
 
+    /**
+     * Runs the Website Deployer
+     */
     public void launch() {
         Scanner in = new Scanner(System.in);
         System.out.print("This will replace " + websiteName + " with the files from " + folderName + ". Is that OK? (y/n): ");
@@ -42,6 +48,13 @@ public class WebsiteDeployer {
         }
     }
 
+    /**
+     * Finds all files under a folder recursively.
+     *
+     * @param start         Folder to start at
+     * @param foldersList   Empty folder list to store results in
+     * @param filesList     Empty files ist to store results in
+     */
     private static void recursiveFolderDiscovery(File start, List<File> foldersList, List<File> filesList) {
         if(start.isDirectory()) {
             foldersList.add(start);
