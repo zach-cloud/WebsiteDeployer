@@ -1,39 +1,26 @@
 package deployer;
 
-import utils.PropertiesReader;
-import utils.S3Accessor;
-
+import utils.ConsoleUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-public class WebsiteDeployer {
+import static utils.FileUtils.recursiveFolderDiscovery;
 
-    private S3Accessor s3Accessor;
-    private String websiteName;
-    private String folderName;
-
-    /**
-     * Creates a Website Deployer using the config.properties file.
-     */
-    public WebsiteDeployer() {
-        PropertiesReader propertiesReader = new PropertiesReader();
-        this.s3Accessor = new S3Accessor(propertiesReader.getProperty("s3AccessKey"), propertiesReader.getProperty("s3SecretKey"));
-        this.websiteName = propertiesReader.getProperty("websiteName");
-        this.folderName = propertiesReader.getProperty("rootFolder");
-    }
+/**
+ * Class to deploy a website from disk to S3
+ */
+public class WebsiteDeployer extends GenericWebsiteUtil {
 
     /**
-     * Runs the Website Deployer
+     * Launches the Website Deployer
+     * Prompts the user to confirm deployment, then deletes all
+     * remote files and uploads files from disk.
      */
     public void launch() {
-        Scanner in = new Scanner(System.in);
-        System.out.print("This will replace " + websiteName + " with the files from " + folderName + ". Is that OK? (y/n): ");
-        String confirmation = in.nextLine();
-        if(confirmation.equalsIgnoreCase("y")){
+        if(ConsoleUtils.getConfirmation("This will replace " + websiteName + " with the files from " + folderName + ". Is that OK?")) {
             List<File> files = new ArrayList<>();
-            recursiveFolderDiscovery(new File(folderName), new ArrayList<File>(), files);
+            recursiveFolderDiscovery(new File(folderName), new ArrayList<>(), files);
             System.out.println("Deleting all files in bucket: " + websiteName);
             s3Accessor.removeFiles(websiteName);
             System.out.println("Uploading files from " + folderName + " to " + websiteName);
@@ -46,27 +33,5 @@ public class WebsiteDeployer {
         } else {
             System.out.println("Exiting.");
         }
-    }
-
-    /**
-     * Finds all files under a folder recursively.
-     *
-     * @param start         Folder to start at
-     * @param foldersList   Empty folder list to store results in
-     * @param filesList     Empty files ist to store results in
-     */
-    private static void recursiveFolderDiscovery(File start, List<File> foldersList, List<File> filesList) {
-        if(start.isDirectory()) {
-            foldersList.add(start);
-            File[] files = start.listFiles();
-            if(files != null) {
-                for (File file : files) {
-                    recursiveFolderDiscovery(file, foldersList, filesList);
-                }
-            }
-        } else {
-            filesList.add(start);
-        }
-
     }
 }

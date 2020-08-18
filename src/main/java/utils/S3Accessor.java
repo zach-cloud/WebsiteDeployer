@@ -3,6 +3,8 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.util.IOUtils;
+
 import java.io.*;
 
 /**
@@ -60,6 +62,30 @@ public class S3Accessor {
         s3.putObject(
                 new PutObjectRequest(bucket, key, file)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
+    }
+
+    public void download(String bucket, String rootDestination) {
+        if(!rootDestination.endsWith("\\")) {
+            rootDestination = rootDestination + "\\";
+        }
+        ObjectListing objects = s3.listObjects(bucket);
+        for(S3ObjectSummary summary : objects.getObjectSummaries()) {
+            try {
+                File file = new File(rootDestination + summary.getKey());
+                if(file.exists()) {
+                    file.delete();
+                }
+                file.mkdirs();
+                file.delete();
+                PrintWriter fileWriter = new PrintWriter(file);
+                S3Object object = s3.getObject(bucket, summary.getKey());
+                fileWriter.println(IOUtils.toString(object.getObjectContent()));
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     /**
